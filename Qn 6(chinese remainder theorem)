@@ -1,0 +1,70 @@
+// Write a program to find and implement the Chinese Remainder Theorem.
+
+#include <iostream>
+#include <vector>
+
+// Extended Euclidean Algorithm to find modular inverse
+int extendedGCD(int a, int b, int& x, int& y) {
+    if (b == 0) {
+        x = 1;
+        y = 0;
+        return a;
+    }
+    int x1, y1;
+    int gcd = extendedGCD(b, a % b, x1, y1);
+    x = y1;
+    y = x1 - (a / b) * y1;
+    return gcd;
+}
+
+// Function to calculate modular inverse
+int modInverse(int a, int m) {
+    int x, y;
+    int gcd = extendedGCD(a, m, x, y);
+    if (gcd != 1) {
+        std::cerr << "Modular inverse does not exist.\n";
+        return -1; // Modular inverse doesn't exist
+    }
+    return (x % m + m) % m;
+}
+
+// Function to apply the Chinese Remainder Theorem
+int chineseRemainderTheorem(const std::vector<int>& a, const std::vector<int>& m) {
+    int n = a.size();
+    if (n != m.size()) {
+        std::cerr << "Number of residues and moduli must be the same.\n";
+        return -1;
+    }
+
+    int M = 1;
+    for (int i = 0; i < n; ++i) {
+        M *= m[i];
+    }
+
+    int result = 0;
+    for (int i = 0; i < n; ++i) {
+        int Mi = M / m[i];
+        int MiInverse = modInverse(Mi, m[i]);
+        if (MiInverse == -1) {
+            return -1;
+        }
+        result += (a[i] * Mi * MiInverse) % M;
+        result %= M;
+    }
+    return result;
+}
+
+int main() {
+    std::vector<int> a = {2, 3, 2}; // Residues
+    std::vector<int> m = {3, 5, 7}; // Moduli
+
+    int result = chineseRemainderTheorem(a, m);
+
+    if (result != -1) {
+        std::cout << "The solution is x ≡ " << result << " (mod " << result << ")\n";
+    } else {
+        std::cout << "No solution exists.\n";
+    }
+
+    return 0;
+}
